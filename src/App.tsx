@@ -1,5 +1,4 @@
-import React from 'react';
-import { ThemeProvider, useTheme, createTheme, PaletteMode, CssBaseline,responsiveFontSizes } from "@mui/material";
+import { ThemeProvider, createTheme, CssBaseline,responsiveFontSizes } from "@mui/material";
 import Home from "./views/Home";
 
 let theme = createTheme({
@@ -15,9 +14,7 @@ let theme = createTheme({
       // contrastText: will be calculated to contrast with palette.primary.main
     },
     secondary: {
-      light: "#f5ee84",
       main: "#1b1c23",
-      dark: "#460370",
       // dark: will be calculated from palette.secondary.main,
       //contrastText: "#ffcc00",
     },
@@ -47,6 +44,73 @@ let theme = createTheme({
       '"Segoe UI Symbol"',
     ].join(','),
   },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          scrollbarColor: "#6b6b6b #2b2b2b",
+          "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
+            backgroundColor: "#2b2b2b",
+          },
+          "&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
+            borderRadius: 8,
+            backgroundColor: "#70fbe0",
+            minHeight: 24,
+            border: "3px solid #2b2b2b",
+          },
+          "&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus": {
+            backgroundColor: "#70fbe0",
+          },
+          "&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active": {
+            backgroundColor: "#70fbe0",
+          },
+          "&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#70fbe0",
+          },
+          "&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner": {
+            backgroundColor: "#2b2b2b",
+          },
+        },
+      }
+    },
+    MuiAutocomplete: {
+      styleOverrides:{
+        listbox: {
+          '& .MuiAutocomplete-option[aria-selected="true"]': {  // works
+            backgroundColor: '#111217',
+          },
+          '& .MuiAutocomplete-option[aria-selected="false"]': {  // works
+            backgroundColor: '#1b1c23',
+          },
+          '& .MuiAutocomplete-option[aria-selected="true"].Mui-focused': { // works
+            backgroundColor: '#70fbe0',
+            color: "#000"
+          },
+          '& .MuiAutocomplete-option:hover': { // works
+            backgroundColor: '#111217',
+          },
+          '& .MuiAutocomplete-option:after': { // works
+            backgroundColor: '#111217',
+          },
+          
+        },
+      }
+    },
+  },
+  
+  
+  // '@global': {
+  //   '*::-webkit-scrollbar': {
+  //     width: '0.4em'
+  //   },
+  //   '*::-webkit-scrollbar-track': {
+  //     '-webkit-box-shadow': 'inset 0 0 6px rgba(0,0,0,0.00)'
+  //   },
+  //   '*::-webkit-scrollbar-thumb': {
+  //     backgroundColor: 'rgba(0,0,0,.1)',
+  //     outline: '1px solid slategrey'
+  //   }
+  // }
 });
 
 function App() {

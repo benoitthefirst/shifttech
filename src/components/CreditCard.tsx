@@ -1,12 +1,9 @@
-import React, {useEffect, useState} from 'react'
-import { IconButton, Paper, Stack, Typography } from '@mui/material'
+import { IconButton, Grid, Paper, Stack, Typography } from '@mui/material'
 import {MoreVert as MoreVertIcon} from '@mui/icons-material';
+import moment from 'moment';
 import ChipIcon from "../assets/chip.svg";
-import VisaIcon from "../assets/visa.svg";
-import MastcardIcon from "../assets/mastercard.svg";
-import DiscoverIcon from "../assets/discover.svg";
-import AmericanExpressIcon from "../assets/american-express.svg";
-import {CardNumberValidator, isAnyNull} from "../utils"
+import BrandIcon from "./BrandIcon";
+import {IsAnyNull,FormatCardNumber} from "../utils"
 
 export default function CreditCard({
     Width,
@@ -15,13 +12,6 @@ export default function CreditCard({
     ExpiryDate,
     HasMore
 }: any) {
-    const [cardNumber, setCardNumber] = useState("");
-    const [brand, setBrand] = useState("");
-
-    //var isValid = CardNumberValidator(CardNumber);
-    useEffect(() => {
-        setCardNumber(CardNumber);
-    }, [CardNumber])
     
   return (
     <Paper sx={{ display: 'flex', flexDirection: 'column', justifyContent: "space-between", bgcolor: "secondary.main", borderRadius:2, height:220, width: Width, p:2}} >
@@ -32,29 +22,30 @@ export default function CreditCard({
             spacing={2}
             width="100%">
             <img src={ChipIcon} alt="chip icon" style={{height: 50}}/>
-            {HasMore == true ? (
+            {HasMore === true ? (
                 <IconButton aria-label="fingerprint" color="primary">
                     <MoreVertIcon />
                 </IconButton>
             ) : ""}
         </Stack>
         <Typography variant="h4" component="div" align="left">
-            {!isAnyNull(CardNumber) ? CardNumber : "0000 0000 0000 0000"}
+            {CardNumber > 0 ? FormatCardNumber(CardNumber) : "0000 0000 0000 0000"}
         </Typography>
-        <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            spacing={2}
-            width="100%">
-            <Typography variant="h6" gutterBottom component="div">
-                {!isAnyNull(NameOnCard) ? NameOnCard : "Jane Done"}
-            </Typography>
-            <Typography variant="h6" gutterBottom component="div">
-                {!isAnyNull(ExpiryDate) ? ExpiryDate : "MM/YY"}
-            </Typography>
-            <img src={MastcardIcon} alt="card brand" style={{height: 50}}/>
-        </Stack>
+        <Grid container spacing={1} alignItems="center">
+            <Grid item xs={7}>
+                <Typography variant="h6" gutterBottom component="div">
+                    {!IsAnyNull(NameOnCard) ? NameOnCard : "Jane Done"}
+                </Typography>
+            </Grid>
+            <Grid item xs={3}>
+                <Typography variant="h6" gutterBottom component="div">
+                    {!IsAnyNull(ExpiryDate) ? ExpiryDate : "MM/YY"}
+                </Typography>
+            </Grid>
+            <Grid item xs={2}>
+                <BrandIcon CardNumber={CardNumber}/>
+            </Grid>
+        </Grid>
     </Paper>
   )
 }

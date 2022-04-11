@@ -1,7 +1,6 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import { styled } from '@mui/material/styles';
 import { 
-    Box,
     Button,
     Dialog,
     DialogActions,
@@ -10,14 +9,16 @@ import {
     IconButton,
     Grid,
     Stack,
-    Typography,
+    TextField,
     FormControl,
-    InputLabel
+    InputLabel,
+    Box
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CreditCard from './CreditCard';
 import CustomInput from "./CustomInput";
 import {UseInput} from "../utils";
+import CountrySelect from "./CountrySelect";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -65,11 +66,14 @@ interface DialogProps {
 }
 
 const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
+    //const [expiryDate, setExpiryDate] = useState<Date | null>(new Date());
+    const [country, setCountry] = useState<string>("");
+    
     const nameOnCard = UseInput("");
-    const cardNumber = UseInput("");
-    const expiryDate = UseInput("");
-    const securityCode = UseInput("");
-    const country = UseInput("");
+    const cardNumber = UseInput("",16,true);
+    const securityCode = UseInput("",3,true);
+    const expiryDate = UseInput("",5,true,true);
+    //const country = UseInput("");
 
     const { setOpen, open, setData } = props;
 
@@ -79,10 +83,10 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
   
     return (
         <BootstrapDialog
-          onClose={handleClose}
-          aria-labelledby="customized-dialog-title"
-          open={open}
-        >
+            onClose={(handleClose)}
+            aria-labelledby="customized-dialog-title"
+            open={open}
+            >
             <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
                 Add New Card
             </BootstrapDialogTitle>
@@ -102,7 +106,11 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 Name on card
                             </InputLabel>
-                            <CustomInput fullWidth placeholder="Jane Doe" value={nameOnCard.value} onChange={nameOnCard.onChange}/>
+                            <CustomInput 
+                                fullWidth 
+                                placeholder="Jane Doe" 
+                                value={nameOnCard.value} 
+                                onChange={nameOnCard.onChange}/>
                         </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -110,7 +118,12 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 Card number
                             </InputLabel>
-                            <CustomInput fullWidth placeholder="0000 0000 0000 0000"  value={cardNumber.value} onChange={cardNumber.onChange}/>
+                            <CustomInput 
+                                fullWidth 
+                                placeholder="0000 0000 0000 0000" 
+                                type="text"
+                                value={cardNumber.value} 
+                                onChange={cardNumber.onChange}/>
                         </FormControl>
                     </Grid>
                     <Grid item xs={6}>
@@ -118,7 +131,14 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 Expiry date
                             </InputLabel>
-                            <CustomInput fullWidth placeholder="MM/YY"  value={expiryDate.value} onChange={expiryDate.onChange}/>
+                            <CustomInput 
+                                fullWidth 
+                                placeholder="MM/YY"
+                                inputProps={{
+                                    maxLength: 5,
+                                }}
+                                value={expiryDate.value} 
+                                onChange={expiryDate.onChange}/>
                         </FormControl>
                     </Grid>
                     <Grid item xs={6}>
@@ -126,15 +146,25 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 Security code
                             </InputLabel>
-                            <CustomInput fullWidth placeholder="CVV" value={securityCode.value} onChange={securityCode.onChange}/>
+                            <CustomInput 
+                                fullWidth 
+                                placeholder="CVV"
+                                type="text"
+                                value={securityCode.value} 
+                                onChange={securityCode.onChange}/>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm={6}>
                         <FormControl variant="standard" fullWidth>
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 Country
                             </InputLabel>
-                            <CustomInput fullWidth placeholder="e.g. UK"  value={country.value} onChange={country.onChange}/>
+                            {/* <CustomInput 
+                                fullWidth 
+                                placeholder="e.g. UK"  
+                                value={country.value} 
+                                onChange={country.onChange}/> */}
+                            <CountrySelect/>
                         </FormControl>
                     </Grid>
                 </Grid>
