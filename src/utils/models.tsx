@@ -12,6 +12,8 @@ export enum CardBrand {
   masterCard="masterCard",
   discover="discover",
   americanExpress="americanExpress",
+  dinersClub="dinersclub",
+  jcb="jcb",
   invalid="invalid"
 }
 

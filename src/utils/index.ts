@@ -18,6 +18,12 @@ export function CardBrandValidator(value: string)
   //dsc, starts with 6011, 622126-622925, 644-649, 65 
   var discovercardno = /^(?:6(?:011|5[0-9][0-9])[0-9]{0,12})$/;
 
+  //Diners Club card starting with 300 through 305, 36, or 38, length 14 digits
+  var dinersclubcardno = /^(?:3(?:0[0-5]|[68][0-9])[0-9]{0,11})$/;
+
+  //JCB card starting with 2131 or 1800, length 15 digits or starting with 35, length 16 digits
+  var jcbcardno = /^(?:(?:2131|1800|35\d{3})\d{0,11})$/;
+
   if(value.match(visacardno))
     _cardBrand = CardBrand.visa;
   else if(value.match(mastercardno))
@@ -26,6 +32,10 @@ export function CardBrandValidator(value: string)
     _cardBrand = CardBrand.americanExpress;
   else if(value.match(discovercardno))
     _cardBrand = CardBrand.discover;
+  else if(value.match(dinersclubcardno))
+    _cardBrand = CardBrand.dinersClub;
+  else if(value.match(jcbcardno))
+    _cardBrand = CardBrand.jcb;
   
   return _cardBrand;
 }
@@ -43,7 +53,7 @@ export function FormatCardNumber(value: string){
   if(block1.length === 4)
     block1 = block1 + ' ';
 
-  if(_cardBrand === CardBrand.visa || _cardBrand === CardBrand.masterCard || _cardBrand === CardBrand.discover){
+  if(_cardBrand === CardBrand.visa || _cardBrand === CardBrand.masterCard || _cardBrand === CardBrand.discover  || _cardBrand === CardBrand.jcb){
     //for 4x4 cards
     block2 = value.substring(4,8);
     if(block2.length === 4)
@@ -55,18 +65,18 @@ export function FormatCardNumber(value: string){
 
     block4 = value.substring(12,16);
   }
-  else if(_cardBrand === CardBrand.americanExpress){
+  else if(_cardBrand === CardBrand.americanExpress || _cardBrand === CardBrand.dinersClub){
     //for Amex cards
     block2 = value.substring(4,10);
     if(block2.length === 6)
       block2 = block2 + " ";
 
-    block3 = value.substring(10,15);
+    block3 = value.substring(10,value.length);
     block4 = "";
   }
   else if(_cardBrand === CardBrand.invalid){
     //Invalid card number
-    block1 = _cardBrand;
+    block1 = value;
     block2 = "";
     block3 = "";
     block4 = "";

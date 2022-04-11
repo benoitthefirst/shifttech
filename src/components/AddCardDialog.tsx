@@ -67,7 +67,7 @@ interface DialogProps {
 
 const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
     //const [expiryDate, setExpiryDate] = useState<Date | null>(new Date());
-    const [country, setCountry] = useState<string>("");
+    const [country, setCountry] = useState("");
     
     const nameOnCard = UseInput("");
     const cardNumber = UseInput("",16,true);
@@ -164,7 +164,7 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                                 placeholder="e.g. UK"  
                                 value={country.value} 
                                 onChange={country.onChange}/> */}
-                            <CountrySelect/>
+                            <CountrySelect value={country} setValue={setCountry}/>
                         </FormControl>
                     </Grid>
                 </Grid>

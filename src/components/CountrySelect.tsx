@@ -14,8 +14,8 @@ import {
 } from '@mui/icons-material';
 import {countries} from "../utils/data";
 
-export default function CountrySelect(props:any) {
-  const [value, setValue] = props;
+export default function CountrySelect(props: any) {
+  let {value, setValue} = props;
   return (
     <Autocomplete
         id="country-select-demo"
@@ -23,7 +23,10 @@ export default function CountrySelect(props:any) {
         sx={{mt:3}}
         options={countries}
         size="small"
-        value={}
+        inputValue={value}
+        onInputChange={(event, newInputValue) => {
+          setValue(newInputValue);
+        }}
         getOptionLabel={(option:any) => option.label}
         renderOption={(props, option:any) => (
         <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0},bgcolor: "secondary.main"}} {...props}>
