@@ -3,11 +3,13 @@ import { Box, Button, Paper, Container, Grid, Stack, Typography } from '@mui/mat
 import {Add as AddIcon} from '@mui/icons-material';
 import CreditCard from "../components/CreditCard";
 import AddCardDialog from '../components/AddCardDialog';
+import {SessionManager} from "../utils";
 import {ICreditCard} from "../utils/models";
 
 export default function Home() {
     const [openDialog, setDialog] = useState(false);
-    const [data, setData] = useState<ICreditCard>();
+    const [data, setData] = useState<Array<ICreditCard>>(SessionManager.cards().all);
+
   return (
     <Container fixed>
         <Box sx={{ minHeight: '100vh', py:5 }}>
@@ -27,10 +29,10 @@ export default function Home() {
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={8} md={12} lg={8}>
                     <Grid container spacing={2}>
-                        {
-                            Array.from(new Array(4)).map((item: any, index: any) => (
+                        {data && 
+                            data.map((item: ICreditCard, index: any) => (
                                 <Grid item key={index} xs={12} sm={12} md={6} lg={6}>
-                                    <CreditCard {...item} HasMore={true}  NameOnCard="Benoit Richard" CardNumber="0000 0000 0000 0000" ExpiryDate="MM/YY"/>
+                                    <CreditCard HasMore={true}  NameOnCard={item.nameOnCard} CardNumber={item.cardNumber} ExpiryDate={item.expiryDate} setData={setData}/>
                                 </Grid>
                             ))
                         }

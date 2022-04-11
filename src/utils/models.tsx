@@ -1,5 +1,4 @@
 export type ICreditCard = {
-  id: string;
   nameOnCard: string;
   cardNumber: string;
   expiryDate: string;

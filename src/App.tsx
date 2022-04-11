@@ -43,6 +43,12 @@ let theme = createTheme({
       '"Segoe UI Emoji"',
       '"Segoe UI Symbol"',
     ].join(','),
+    h4: {
+      fontSize: 24
+    },
+    h6: {
+      fontSize: 12
+    }
   },
   components: {
     MuiCssBaseline: {
@@ -97,25 +103,11 @@ let theme = createTheme({
       }
     },
   },
-  
-  
-  // '@global': {
-  //   '*::-webkit-scrollbar': {
-  //     width: '0.4em'
-  //   },
-  //   '*::-webkit-scrollbar-track': {
-  //     '-webkit-box-shadow': 'inset 0 0 6px rgba(0,0,0,0.00)'
-  //   },
-  //   '*::-webkit-scrollbar-thumb': {
-  //     backgroundColor: 'rgba(0,0,0,.1)',
-  //     outline: '1px solid slategrey'
-  //   }
-  // }
 });
 
 function App() {
   theme = responsiveFontSizes(theme);
-
+  
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

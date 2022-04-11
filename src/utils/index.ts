@@ -1,6 +1,5 @@
 import {useState} from "react";
-import {CardBrand} from "../utils/models";
-import moment from 'moment';
+import {CardBrand, ICreditCard} from "../utils/models";
 
 export function CardBrandValidator(value: string)
 {
@@ -86,6 +85,18 @@ export function FormatCardNumber(value: string){
 
 export const IsAnyNull = (fields: any) => {
     let _anyNull = true;
+
+    switch(typeof(fields))
+    {
+      case "number":
+      case "bigint":
+      case "boolean":
+        return false;
+      case "string":
+        return fields === null || fields === "" || fields === undefined;
+      default:
+        break;
+    }
   
     if (!fields) return true;
   
@@ -144,4 +155,70 @@ export const UseInput = (defaultValue: any, limit = 0, isNumber = false, isExpir
   }
 
   return {value, setValue, onChange};
+}
+
+class CardDataStore {
+  private readonly creditCardKey: string = "shifttech.credit_card";
+  constructor(private store: Storage, data?: any) {
+    if (data) this.update = data;
+  }
+
+  public get all() {
+    const d = this.store.getItem(this.creditCardKey);
+
+    if (d) return JSON.parse(d) as ICreditCard[];
+
+    return new Array<ICreditCard>();
+  }
+
+  public set update(data: ICreditCard[] | ICreditCard) {
+
+    if(!data)
+      return;
+      
+    if((data as ICreditCard[]).length > 0)
+    {
+      this.store.setItem(this.creditCardKey, JSON.stringify(data));
+    }else{
+      const _cards = this.all;
+      const _data = data as ICreditCard;
+      const index = _cards.findIndex(x => x.cardNumber === _data.cardNumber);
+
+      if(index == -1){
+        _cards.push(_data)
+      }else{
+        _cards[index] = _data;
+      }
+
+      this.store.setItem(this.creditCardKey, JSON.stringify(_cards));
+    }
+  }
+
+  public set delete(value: string){
+    if(IsAnyNull(value))
+      return;
+    
+    let _cards = this.all;
+    let index = _cards.findIndex(x => x.cardNumber === value);
+
+    if(index != -1){
+      _cards.splice(index,1);
+      this.store.setItem(this.creditCardKey, JSON.stringify(_cards));
+    }
+  }
+
+  public clealAll() {
+    this.update = new Array<ICreditCard>();
+  }
+}
+
+export class SessionManager {
+  private static readonly store: Storage = sessionStorage;
+
+  /**
+   * cards
+   */
+  public static cards(data?: any) {
+    return new CardDataStore(SessionManager.store, data);
+  }
 }
