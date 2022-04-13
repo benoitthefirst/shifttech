@@ -1,56 +1,94 @@
-import {useState} from 'react'
+import React, {useState} from 'react'
 import { 
     Box, 
     Button, 
     Collapse,
+    IconButton,
     Paper, 
     Container, 
     Grid, 
     Stack, 
-    Typography, 
     ListItemButton, 
     List, 
     ListSubheader, 
     ListItemText, 
-    ListItemIcon 
+    ListItemIcon,
+    Slide,
+    SlideProps,
+    Snackbar,
+    Typography,
+    Alert,
+    AlertColor, 
 } from '@mui/material'
-import {Add as AddIcon} from '@mui/icons-material';
+import {Add as AddIcon, Delete as DeleteIcon} from '@mui/icons-material';
 import CreditCard from "../components/CreditCard";
 import AddCardDialog from '../components/AddCardDialog';
-import {GetCountry, SessionManager, BannedList, UseInput, IsAnyNull} from "../utils";
+import {GetCountry, SessionManager, IsAnyNull} from "../utils";
 import {ICreditCard, Country} from "../utils/models";
 import bannedCountries from "../assets/bannedCountries.json";
 import CountrySelect from "../components/CountrySelect";
 
-export default function Home() {
-    var jsonData = bannedCountries as Array<Country>;
-    var _bannedList = BannedList(jsonData);
+type TransitionProps = Omit<SlideProps, 'direction'>;
 
+function TransitionLeft(props: TransitionProps) {
+    return <Slide {...props} direction="right" />;
+}
+
+export default function Home() {
+    const jsonData = bannedCountries as Array<Country>;
+    const _bannedList = SessionManager.bannedCountries(jsonData);
     const [openDialog, setDialog] = useState(false);
     const [open, setOpen] = useState(false);
+    const [showSnack, setShowSnack] = useState(false);
+    const [snackMessage, setSnackMessage] = useState("");
+    const [severity, setSeverity] = useState<AlertColor>("success");
+    const [country, setCountry] = React.useState<string | null>("");
     const [data, setData] = useState<Array<ICreditCard>>(SessionManager.cards().all);
     const [banned, setBanned] = useState<Array<Country>>(_bannedList.getBannedList());
-
-    const country = UseInput("");
-
+    const [transition, setTransition] = React.useState<React.ComponentType<TransitionProps> | undefined>(undefined);
 
     const updateBannedList = () => {
 
-        if(IsAnyNull(country.value))
+        if(IsAnyNull(country))
             return;
 
-        let found = banned.find((x: Country) => x.label === country.value);
-        if(found) return;
+        let found = banned.find((x: Country) => x.label === country);
+        if(found){
+            setSeverity("error");
+            setSnackMessage(`${country} is already part of the banned countries.`);
+            setTransition(() => TransitionLeft);
+            setShowSnack(true);
+            return;
+        }
 
-        let _country = GetCountry(country.value);
+        let _country = GetCountry(country as string);
 
         if(_country){
             _bannedList.add(_country);
             setBanned(_bannedList.getBannedList());
             setOpen(false);
-            country.setValue("");
+
+            setSeverity("success");
+            setSnackMessage(`${country} has been added to banned list.`);
+            setTransition(() => TransitionLeft);
+            setShowSnack(true);
         }
-        
+
+
+        setCountry("");
+    }
+
+    const removeFromBannedList = (value: string) => {
+        if(IsAnyNull(value))
+            return;
+
+        _bannedList.delete(value);
+        setBanned(_bannedList.getBannedList());
+
+        setSeverity("success");
+        setSnackMessage(`${value} has been removed from the list of banned countries.`);
+        setTransition(() => TransitionLeft);
+        setShowSnack(true);
     }
 
     return (
@@ -87,7 +125,7 @@ export default function Home() {
                                 sx={{ 
                                     width: '100%', 
                                     overflow: 'auto',
-                                    maxHeight: 300,
+                                    maxHeight: 350,
                                     bgcolor: 'secondary.main' 
                                 }}
                                 component="nav"
@@ -106,19 +144,23 @@ export default function Home() {
                                                 startIcon={<AddIcon />} 
                                                 size="small" 
                                                 color={open ? "error" : "primary"} 
+                                                disabled={open && IsAnyNull(country)}
                                                 onClick={open ? updateBannedList : () => setOpen(true)}>
                                                 {open ? "Ban" : ""}
                                             </Button>
                                         </Stack>
-                                        <Collapse in={open}>
-                                            <CountrySelect mt={0} value={country.value} required setValue={country.setValue}/>
+                                        <Collapse in={open} sx={{mt:0}}>
+                                            <CountrySelect mt={0} value={country} setValue={setCountry}/>
                                         </Collapse>
                                     </ListSubheader>
                                 }
                                 >
                                 {banned && 
                                     banned.map((item, index: any) => (
-                                        <ListItemButton key={index}>
+                                        <ListItemButton key={index} >
+                                            <IconButton aria-label="delete" color="error" onClick={() => removeFromBannedList(item.label)}>
+                                                <DeleteIcon />
+                                            </IconButton>
                                             <ListItemIcon>
                                                 <img
                                                     loading="lazy"
@@ -137,6 +179,16 @@ export default function Home() {
                 </Grid>
             </Box>
             <AddCardDialog bannedList={banned} setData={setData} setOpen={setDialog} open={openDialog}/>
+            <Snackbar
+                open={showSnack}
+                onClose={() => setShowSnack(false)}
+                TransitionComponent={transition}
+                autoHideDuration={3000}
+                key={transition ? transition.name : ''}>
+                <Alert onClose={() => setShowSnack(false)} severity={severity} variant="filled" sx={{ width: '100%' }}>
+                    {snackMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     )
 }

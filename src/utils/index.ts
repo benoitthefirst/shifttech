@@ -197,12 +197,54 @@ export const UseInput = (defaultValue: any, limit = 0, isNumber = false, isExpir
   return {value, setValue, onChange};
 }
 
-export const BannedList = (countries: Country[]) => {
-  var _countries = countries ? [...countries] : new Array<Country>();
+const BannedList = (store: Storage, countries?: Country[]) => {
+  const bannedCountriesKey = "bannedCountriesKey";
+
+  const save = (data: Country[]) => store.setItem(bannedCountriesKey, JSON.stringify(data));
+  const load = () => {
+    const d = store.getItem(bannedCountriesKey);
+
+    if(d) return JSON.parse(d) as Country[];
+    return null;
+  }
+
+  const sort = (data: Country[]) => data.sort((a,b) => {
+    if(a.label < b.label) return -1;
+    else if(a.label > b.label) return 1;
+
+    return 0;
+  })
+
+  let saved = load();
+  if(!saved){
+    saved = countries ? [...countries] : new Array<Country>();
+    saved = sort(saved);
+    save(saved!);
+  }else
+  {
+    saved = sort(saved);
+  }
   
   return {
-      getBannedList:() => _countries,
-      add: (value: Country) => _countries.push(value)
+      getBannedList:() => [...saved!],
+      add: (value: Country) => {
+        saved!.push(value);
+        saved = sort(saved!);
+        save(saved);
+      },
+      delete: (value: string) => {
+        if(IsAnyNull(value))
+          return;
+        
+        let index = saved!.findIndex(x => x.label === value);
+
+        console.log("index: ", index);
+        if(index !== -1){
+          saved!.splice(index,1);
+          save(saved!);
+          console.log("Countries: ", [...saved!]);
+        }
+      }
   }
 }
 
@@ -285,5 +327,9 @@ export class SessionManager {
    */
   public static cards(data?: any) {
     return new CardDataStore(SessionManager.store, data);
+  }
+
+  public static bannedCountries(data?: Country[]){
+    return BannedList(SessionManager.store, data);
   }
 }

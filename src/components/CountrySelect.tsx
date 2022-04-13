@@ -7,6 +7,7 @@ import {countries} from "../utils/data";
 
 export default function CountrySelect(props: any) {
   let {value, setValue, mt} = props;
+
   return (
     <Autocomplete
         id="country-select-demo"
@@ -14,8 +15,9 @@ export default function CountrySelect(props: any) {
         sx={{mt: mt ? mt : 3}}
         options={countries}
         size="small"
+        clearOnBlur
         inputValue={value}
-        onInputChange={(event, newInputValue) => {
+        onInputChange={(event, newInputValue,reason) => {
           setValue(newInputValue);
         }}
         getOptionLabel={(option:any) => option.label}
