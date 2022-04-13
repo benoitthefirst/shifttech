@@ -1,9 +1,11 @@
-# Getting Started with Create React App
+# Welcome to shifttech!!!
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 # App Demo
 ShiftTech [Demo](https://shift-tech.herokuapp.com/).
+
+![Alt text](/screenshotsscreenshot.png?raw=true "ShiftTech Preview")
 
 ## Available Scripts
 
