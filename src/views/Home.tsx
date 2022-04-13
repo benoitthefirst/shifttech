@@ -158,9 +158,6 @@ export default function Home() {
                                 {banned && 
                                     banned.map((item, index: any) => (
                                         <ListItemButton key={index} >
-                                            <IconButton aria-label="delete" color="error" onClick={() => removeFromBannedList(item.label)}>
-                                                <DeleteIcon />
-                                            </IconButton>
                                             <ListItemIcon>
                                                 <img
                                                     loading="lazy"
@@ -171,6 +168,9 @@ export default function Home() {
                                                 />
                                             </ListItemIcon>
                                             <ListItemText primary={item.label} />
+                                            <IconButton aria-label="delete" color="error" onClick={() => removeFromBannedList(item.label)}>
+                                                <DeleteIcon />
+                                            </IconButton>
                                         </ListItemButton>
                                     ))}
                             </List>
