@@ -5,7 +5,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 # App Demo
 ShiftTech [Demo](https://shift-tech.herokuapp.com/).
 
-![Alt text](/screenshotsscreenshot.png?raw=true "ShiftTech Preview")
+!["ShiftTech Preview"](https://github.com/benoitthefirst/shifttech/blob/main/screenshots/screenshot.png?raw=true "ShiftTech Preview")
 
 ## Available Scripts
 
