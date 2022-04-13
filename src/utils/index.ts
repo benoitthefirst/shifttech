@@ -1,5 +1,6 @@
 import {useState} from "react";
 import {CardBrand, Country, ICreditCard} from "../utils/models";
+import {countries} from "./data";
 
 export const CardBrandValidator = (value: string) => {
   if (IsAnyNull(value)) return CardBrand.invalid;
@@ -203,6 +204,15 @@ export const BannedList = (countries: Country[]) => {
       getBannedList:() => _countries,
       add: (value: Country) => _countries.push(value)
   }
+}
+
+export const GetCountry = (value: string) => {
+
+  if(IsAnyNull(value)) return;
+
+  let found = countries.find(x => x.label === value);
+
+  return found;
 }
 class CardDataStore {
   private readonly creditCardKey: string = "shifttech.credit_card";

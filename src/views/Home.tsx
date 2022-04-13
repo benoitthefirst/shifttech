@@ -1,18 +1,57 @@
 import {useState} from 'react'
-import { Box, Button, Paper, Container, Grid, Stack, Typography, ListItemButton, List, ListSubheader, ListItemText, ListItemIcon } from '@mui/material'
+import { 
+    Box, 
+    Button, 
+    Collapse,
+    Paper, 
+    Container, 
+    Grid, 
+    Stack, 
+    Typography, 
+    ListItemButton, 
+    List, 
+    ListSubheader, 
+    ListItemText, 
+    ListItemIcon 
+} from '@mui/material'
 import {Add as AddIcon} from '@mui/icons-material';
 import CreditCard from "../components/CreditCard";
 import AddCardDialog from '../components/AddCardDialog';
-import {SessionManager, BannedList} from "../utils";
+import {GetCountry, SessionManager, BannedList, UseInput, IsAnyNull} from "../utils";
 import {ICreditCard, Country} from "../utils/models";
 import bannedCountries from "../assets/bannedCountries.json";
+import CountrySelect from "../components/CountrySelect";
 
 export default function Home() {
-    const [openDialog, setDialog] = useState(false);
-    const [data, setData] = useState<Array<ICreditCard>>(SessionManager.cards().all);
-
     var jsonData = bannedCountries as Array<Country>;
-    var banned = BannedList(jsonData);
+    var _bannedList = BannedList(jsonData);
+
+    const [openDialog, setDialog] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [data, setData] = useState<Array<ICreditCard>>(SessionManager.cards().all);
+    const [banned, setBanned] = useState<Array<Country>>(_bannedList.getBannedList());
+
+    const country = UseInput("");
+
+
+    const updateBannedList = () => {
+
+        if(IsAnyNull(country.value))
+            return;
+
+        let found = banned.find((x: Country) => x.label === country.value);
+        if(found) return;
+
+        let _country = GetCountry(country.value);
+
+        if(_country){
+            _bannedList.add(_country);
+            setBanned(_bannedList.getBannedList());
+            setOpen(false);
+            country.setValue("");
+        }
+        
+    }
 
     return (
         <Container fixed>
@@ -55,12 +94,30 @@ export default function Home() {
                                 aria-labelledby="nested-list-subheader"
                                 subheader={
                                     <ListSubheader component="div" id="nested-list-subheader" sx={{bgcolor: 'secondary.main' }}>
-                                        Banned Countries
+                                        <Stack
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            alignItems="flex-start"
+                                            spacing={2}
+                                            marginBottom={0}>
+                                            Banned Countries
+                                            <Button 
+                                                variant="contained" 
+                                                startIcon={<AddIcon />} 
+                                                size="small" 
+                                                color={open ? "error" : "primary"} 
+                                                onClick={open ? updateBannedList : () => setOpen(true)}>
+                                                {open ? "Ban" : ""}
+                                            </Button>
+                                        </Stack>
+                                        <Collapse in={open}>
+                                            <CountrySelect mt={0} value={country.value} required setValue={country.setValue}/>
+                                        </Collapse>
                                     </ListSubheader>
                                 }
                                 >
-                                {banned.getBannedList() && 
-                                    banned.getBannedList().map((item, index: any) => (
+                                {banned && 
+                                    banned.map((item, index: any) => (
                                         <ListItemButton key={index}>
                                             <ListItemIcon>
                                                 <img
@@ -79,7 +136,7 @@ export default function Home() {
                     </Grid>
                 </Grid>
             </Box>
-            <AddCardDialog bannedList={banned.getBannedList()} setData={setData} setOpen={setDialog} open={openDialog}/>
+            <AddCardDialog bannedList={banned} setData={setData} setOpen={setDialog} open={openDialog}/>
         </Container>
     )
 }

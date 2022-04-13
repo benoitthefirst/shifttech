@@ -6,12 +6,12 @@ import {
 import {countries} from "../utils/data";
 
 export default function CountrySelect(props: any) {
-  let {value, setValue} = props;
+  let {value, setValue, mt} = props;
   return (
     <Autocomplete
         id="country-select-demo"
         fullWidth
-        sx={{mt:3}}
+        sx={{mt: mt ? mt : 3}}
         options={countries}
         size="small"
         inputValue={value}
