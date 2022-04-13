@@ -1,6 +1,6 @@
-import {CountryType} from "./models";
+import {Country} from "./models";
 
-export const countries: readonly CountryType[] = [
+export const countries: readonly Country[] = [
     { code: 'AD', label: 'Andorra', phone: '376' },
     {
       code: 'AE',

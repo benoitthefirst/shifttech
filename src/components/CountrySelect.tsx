@@ -1,17 +1,8 @@
 import {
   Autocomplete,
   Box,
-  FormControl,
-  InputLabel,
-  NoSsr,
   TextField,
-  Typography,
 } from '@mui/material';
-import { makeStyles, styled } from '@mui/material/styles';
-import {
-  Check as CheckIcon,
-  Close as CloseIcon
-} from '@mui/icons-material';
 import {countries} from "../utils/data";
 
 export default function CountrySelect(props: any) {

@@ -16,9 +16,9 @@ export enum CardBrand {
   invalid="invalid"
 }
 
-export interface CountryType {
+export interface Country {
   code: string;
   label: string;
-  phone: string;
+  phone?: string;
   suggested?: boolean;
 }

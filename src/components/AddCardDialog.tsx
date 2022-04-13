@@ -10,20 +10,17 @@ import {
     IconButton,
     Grid,
     Stack,
-    TextField,
     FormControl,
     InputLabel,
-    Box,
-    Typography,
     FormHelperText,
     Alert
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CreditCard from './CreditCard';
 import CustomInput from "./CustomInput";
-import {UseInput, IsAnyNull, SessionManager} from "../utils";
+import {UseInput, FormatCardNumber,CardNumberLimit, IsAnyNull, SessionManager} from "../utils";
 import CountrySelect from "./CountrySelect";
-import { ICreditCard } from '../utils/models';
+import { ICreditCard, Country } from '../utils/models';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -68,24 +65,22 @@ interface DialogProps {
     setOpen: (isOpen: boolean) => void;
     open: boolean;
     setData: any;
+    bannedList: any;
 }
 
-const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
+const AddCardDialog: React.FunctionComponent<DialogProps> = ({ setOpen, open, setData, bannedList }) => {
     const [nameOnCardError, setNameOnCardError] = useState("");
     const [cardNumberError, setCardNumberError] = useState("");
     const [securityCodeError, setSecurityCodeError] = useState("");
     const [expiryDateError, setExpiryDateError] = useState("");
     const [countryError, setCountryError] = useState("");
     const [error, setError] = useState("");
-    //const [country, setCountry] = useState("");
 
     const nameOnCard = UseInput("");
     const cardNumber = UseInput("",16,true);
     const securityCode = UseInput("",3,true);
     const expiryDate = UseInput("",5,true,true);
     const country = UseInput("");
-
-    const { setOpen, open, setData } = props;
 
     const onClose = () => {
       setOpen(false);
@@ -107,9 +102,19 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
             setCardNumberError("Card number is required");
             return false;
         }
+        let limit = CardNumberLimit(cardNumber.value);
+        if(cardNumber.value.length < limit)
+        {
+            setError("The credit card number you entered is invalid. Please check your card and try again.");
+            return false;
+        }
 
+        let year = new Date().getFullYear();
         if (IsAnyNull(expiryDate.value)) {
             setExpiryDateError("Expiry date is required");
+            return false;
+        }else if(Number(expiryDate.value.substring(3,5)) < year%100){
+            setExpiryDateError("You entered an expiration that has already passed.");
             return false;
         }
 
@@ -126,6 +131,29 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
         return true;
     }
 
+    const isCoutryBanned = (value: string) => {
+        var found = bannedList.find((x: Country) => x.label === value);
+        if(found){
+            setError(`Shift Tech is currently not available in your country or region of ${value}!`);
+            return true;
+        }
+
+        setError(""); //clear errors
+        return false;
+    }
+
+    const cardExist = (value: string) => {
+        let data = SessionManager.cards().all as ICreditCard[];
+        let found = data.find(x => x.cardNumber === value);
+        if(found){
+            setError("Credit card already added, trying using a different credit card!");
+            return true;
+        }
+
+        setError("");; //clear errors
+        return false;
+    }
+
     const clearAll = () => {
         nameOnCard.setValue("");
         cardNumber.setValue("");
@@ -136,19 +164,16 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
 
     const onSubmit = (e: { preventDefault: () => void }) => {
         e.preventDefault();
-    
+        setError("");
+
         //handle input validation
         if(!validate()) return;
+        
+        //Check the specified country to make sure it doesn’t exist in a list of banned countries.
+        if(isCoutryBanned(country.value)) return;
 
-        let data = SessionManager.cards().all as ICreditCard[];
-        
-        //TO-DO: Check the specified country to make sure it doesn’t exist in a list of banned countries.
-        
         //Don’t capture the same card twice.
-        let found = data.find(x => x.cardNumber === cardNumber.value);
-        if(found) return setError("Credit card all ready added!");
-
-        setError("");
+        if(cardExist(cardNumber.value)) return;
 
         //after success validation
         const model: ICreditCard = {
@@ -160,8 +185,7 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
         };
 
         //If the card is valid – store it somewhere for the session.
-        SessionManager.cards().update = model;
-
+        SessionManager.cards().update.add(model);
         setData(SessionManager.cards().all);
 
         clearAll();
@@ -202,7 +226,7 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                                 required
                                 value={nameOnCard.value} 
                                 onChange={nameOnCard.onChange}/>
-                            <FormHelperText color='darkRed'>{nameOnCardError}</FormHelperText>
+                            <FormHelperText error={true}>{nameOnCardError}</FormHelperText>
                         </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -215,9 +239,9 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                                 placeholder="0000 0000 0000 0000" 
                                 type="text"
                                 required
-                                value={cardNumber.value} 
+                                value={FormatCardNumber(cardNumber.value)} 
                                 onChange={cardNumber.onChange}/>
-                            <FormHelperText color='darkRed'>{cardNumberError}</FormHelperText>
+                            <FormHelperText error={true}>{cardNumberError}</FormHelperText>
                         </FormControl>
                     </Grid>
                     <Grid item xs={6}>
@@ -231,7 +255,7 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                                 required
                                 value={expiryDate.value} 
                                 onChange={expiryDate.onChange}/>
-                            <FormHelperText color='darkRed'>{expiryDateError}</FormHelperText>
+                            <FormHelperText  error={true}>{expiryDateError}</FormHelperText>
                         </FormControl>
                     </Grid>
                     <Grid item xs={6}>
@@ -246,7 +270,7 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                                 required
                                 value={securityCode.value} 
                                 onChange={securityCode.onChange}/>
-                            <FormHelperText color='darkRed'>{securityCodeError}</FormHelperText>
+                            <FormHelperText  error={true}>{securityCodeError}</FormHelperText>
                         </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -255,7 +279,7 @@ const AddCardDialog: React.FunctionComponent<DialogProps> = (props) => {
                                 Country
                             </InputLabel>
                             <CountrySelect value={country.value} required setValue={country.setValue}/>
-                            <FormHelperText color='darkRed'>{countryError}</FormHelperText>
+                            <FormHelperText  error={true}>{countryError}</FormHelperText>
                         </FormControl>
                     </Grid>
                 </Grid>

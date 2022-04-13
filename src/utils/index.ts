@@ -1,8 +1,7 @@
 import {useState} from "react";
-import {CardBrand, ICreditCard} from "../utils/models";
+import {CardBrand, Country, ICreditCard} from "../utils/models";
 
-export function CardBrandValidator(value: string)
-{
+export const CardBrandValidator = (value: string) => {
   if (IsAnyNull(value)) return CardBrand.invalid;
   
   //supports Amex, Master Card, Visa, and Discover
@@ -14,7 +13,7 @@ export function CardBrandValidator(value: string)
   var mastercardno = /^(?:5[1-5][0-9]{0,14})$/;
   //Amex, starts with 34 or 37 
   var americaExcardno = /^(?:3[47][0-9]{0,13})$/;
-  //dsc, starts with 6011, 622126-622925, 644-649, 65 
+  //dsc, starts with 6011, 65 
   var discovercardno = /^(?:6(?:011|5[0-9][0-9])[0-9]{0,12})$/;
 
   //Diners Club card starting with 300 through 305, 36, or 38, length 14 digits
@@ -39,7 +38,7 @@ export function CardBrandValidator(value: string)
   return _cardBrand;
 }
 
-export function FormatCardNumber(value: string){
+export const FormatCardNumber = (value: string) => {
   let _cardBrand = CardBrandValidator(value);
 
   var block1 = "";
@@ -47,31 +46,45 @@ export function FormatCardNumber(value: string){
   var block3 = "";
   var block4 = "";
 
-  //all support card types have a 4 digit first block
-  block1 = value.substring(0,4);
-  if(block1.length === 4)
-    block1 = block1 + ' ';
-
-  if(_cardBrand === CardBrand.visa || _cardBrand === CardBrand.masterCard || _cardBrand === CardBrand.discover  || _cardBrand === CardBrand.jcb){
-    //for 4x4 cards
+  const Cards4Set = () => {
     block2 = value.substring(4,8);
-    if(block2.length === 4)
+    if(block2.length === 4 && value.length > 8)
       block2 = block2 + " ";
 
     block3 = value.substring(8,12);
-    if(block3.length === 4)
+    if(block3.length === 4 && value.length > 12)
       block3 = block3 + " ";
 
     block4 = value.substring(12,16);
   }
-  else if(_cardBrand === CardBrand.americanExpress || _cardBrand === CardBrand.dinersClub){
-    //for Amex cards
+
+  const Cards3Set = () => {
     block2 = value.substring(4,10);
-    if(block2.length === 6)
+    if(block2.length === 6 && value.length > 10)
       block2 = block2 + " ";
 
     block3 = value.substring(10,value.length);
     block4 = "";
+  }
+
+  //all support card types have a 4 digit first block
+  block1 = value.substring(0,4);
+  if(block1.length === 4 && value.length > 4)
+    block1 = block1 + " ";
+
+  if(_cardBrand === CardBrand.visa || _cardBrand === CardBrand.masterCard || _cardBrand === CardBrand.discover){
+    //for 4x4 cards
+    Cards4Set();
+  }
+  else if(_cardBrand === CardBrand.jcb){
+    if(Number(value.substring(0,2)) === 35)
+      Cards4Set();
+    else
+      Cards3Set();
+  }
+  else if(_cardBrand === CardBrand.americanExpress || _cardBrand === CardBrand.dinersClub){
+    //for Amex & diners club cards
+    Cards3Set();
   }
   else if(_cardBrand === CardBrand.invalid){
     //Invalid card number
@@ -81,6 +94,25 @@ export function FormatCardNumber(value: string){
     block4 = "";
   }
   return block1 + block2 + block3 + block4;
+}
+
+export const CardNumberLimit = (value: string) => {
+  const checkValue = value.length > 4 ? value.substring(0,4) : value;
+  let _cardBrand = CardBrandValidator(checkValue);
+
+  if(_cardBrand === CardBrand.americanExpress)
+    return 15;//length 15 digits
+  else if(_cardBrand === CardBrand.jcb){
+    if(Number(value.substring(0,2)) === 35)
+      return 16; //length 16 digits 
+    else
+      return 15;//length 15 digits
+  }
+  else if(_cardBrand === CardBrand.dinersClub)
+    return 14;//length 14 digits
+
+  //return 16 as default since visa, master card and discover have 16 digits length
+  return 16;
 }
 
 export const IsAnyNull = (fields: any) => {
@@ -117,12 +149,19 @@ export const IsAnyNull = (fields: any) => {
 
 export const UseInput = (defaultValue: any, limit = 0, isNumber = false, isExpireDate = false) => {
   const [value, setValue] = useState(defaultValue);
+  let maxLimit = limit;
 
   const onChange = ({ target }: any) => {
     let _value = target.value;
+    
+    if(isNumber === true){
+      //_value = _value.replaceAll("\\s+","");
+      _value = _value.replace(/[^0-9]/g,"").toString();
 
-    if(isNumber === true)
-      _value = _value.replace(/[^0-9.]/g,"").toString();
+      if(_value.length > 5){
+        maxLimit = CardNumberLimit(_value);
+      }
+    }
 
     if(isExpireDate === true)
     {
@@ -148,8 +187,8 @@ export const UseInput = (defaultValue: any, limit = 0, isNumber = false, isExpir
       _value = month + seperator + year;
     }
     
-    if(limit > 0)
-      _value = _value.substring(0,limit);
+    if(maxLimit > 0)
+      _value = _value.substring(0,maxLimit);
 
     return setValue(_value);
   }
@@ -157,10 +196,18 @@ export const UseInput = (defaultValue: any, limit = 0, isNumber = false, isExpir
   return {value, setValue, onChange};
 }
 
+export const BannedList = (countries: Country[]) => {
+  var _countries = countries ? [...countries] : new Array<Country>();
+  
+  return {
+      getBannedList:() => _countries,
+      add: (value: Country) => _countries.push(value)
+  }
+}
 class CardDataStore {
   private readonly creditCardKey: string = "shifttech.credit_card";
   constructor(private store: Storage, data?: any) {
-    if (data) this.update = data;
+    if (data) this.update.add(data);
   }
 
   public get all() {
@@ -171,20 +218,19 @@ class CardDataStore {
     return new Array<ICreditCard>();
   }
 
-  public set update(data: ICreditCard[] | ICreditCard) {
+  public get update() {
 
-    if(!data)
+    const add = (data: ICreditCard) => 
+    {
+      if(!data)
       return;
       
-    if((data as ICreditCard[]).length > 0)
-    {
-      this.store.setItem(this.creditCardKey, JSON.stringify(data));
-    }else{
+    
       const _cards = this.all;
       const _data = data as ICreditCard;
       const index = _cards.findIndex(x => x.cardNumber === _data.cardNumber);
 
-      if(index == -1){
+      if(index === -1){
         _cards.push(_data)
       }else{
         _cards[index] = _data;
@@ -192,6 +238,15 @@ class CardDataStore {
 
       this.store.setItem(this.creditCardKey, JSON.stringify(_cards));
     }
+
+    const reset = (data: ICreditCard[]) =>
+    {
+      if(!data) return;
+      this.store.setItem(this.creditCardKey, JSON.stringify(data));
+    }
+    return {add, reset}
+
+
   }
 
   public set delete(value: string){
@@ -201,14 +256,14 @@ class CardDataStore {
     let _cards = this.all;
     let index = _cards.findIndex(x => x.cardNumber === value);
 
-    if(index != -1){
+    if(index !== -1){
       _cards.splice(index,1);
       this.store.setItem(this.creditCardKey, JSON.stringify(_cards));
     }
   }
 
   public clealAll() {
-    this.update = new Array<ICreditCard>();
+    this.update.reset(new Array<ICreditCard>());
   }
 }
 
